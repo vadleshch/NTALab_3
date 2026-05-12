@@ -8,32 +8,104 @@ long GetPrimeByIndex(int i)
 int n;
 int alpha;
 int beta;
+Stopwatch sw = new Stopwatch();
 Random r = new Random();
-
-Console.Write("p");
-int p = Convert.ToInt32(Console.ReadLine());
-Console.Write("alpha");
-alpha = Convert.ToInt32(Console.ReadLine());
-Console.Write("beta");
-beta = Convert.ToInt32(Console.ReadLine());
-n = p - 1;
-Stopwatch sw = Stopwatch.StartNew();
-int[] B = GetPB(n);
+int p, x = 0;
+int[] B, logs;
 equation[] eqs;
-int[] logs;
-while (true)
+Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "n".PadRight(10) + "x".PadRight(12) + "час".PadRight(12));
+for (int i = 100000; i <= 9900000; i += 900000)
 {
-    eqs = GetEqs(p, alpha, n, B);
-    logs = Solve(eqs, n, B.Length);
-    if (logs != null)
+    p = (int)GetPrimeByIndex(i);
+    n = p - 1;
+    alpha = FindGenerator();
+    for (int j = 1; j < 6; j++)
     {
-        break;
+        beta = ModPow(alpha, r.Next(100, n), p);
+        sw.Restart();
+        for (int k = 0; k < 5; k++)
+        {
+            B = GetPB(n);
+            while (true)
+            {
+                logs = Solve(GetEqs(p, alpha, n, B), n, B.Length);
+                if (logs != null)
+                {
+                    break;
+                }
+            }
+            x = GetX(p, alpha, beta, n, B, logs);
+        }
+        sw.Stop();
+
+        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + n.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds/5).ToString().PadRight(12));
     }
 }
-int x = GetX(p, alpha, beta, n, B, logs);
-sw.Stop();
-Console.WriteLine("x = " + x);
-Console.WriteLine(sw.ElapsedMilliseconds);
+
+//Console.Write("p = ");
+//int p = Convert.ToInt32(Console.ReadLine());
+//Console.Write("alpha = ");
+//alpha = Convert.ToInt32(Console.ReadLine());
+//Console.Write("beta = ");
+//beta = Convert.ToInt32(Console.ReadLine());
+//n = p - 1;
+//int[] B = GetPB(n);
+//equation[] eqs;
+//int[] logs;
+//while (true)
+//{
+//    eqs = GetEqs(p, alpha, n, B);
+//    logs = Solve(eqs, n, B.Length);
+//    if (logs != null)
+//    {
+//        break;
+//    }
+//}
+//int x = GetX(p, alpha, beta, n, B, logs);
+//Console.WriteLine("x = " + x);
+
+int[] GetPrimeDivisors(int n)       
+{
+    List<int> divs = new List<int>();
+    for (int i = 2; i * i < n; i++)
+    {
+        if (n % i == 0)
+        {
+            divs.Add(i);
+            while (n % i == 0)
+            {
+                n /= i;
+            }
+        }
+    }
+    divs.Add(n);
+    return divs.ToArray();
+}
+
+bool IsGenerator(int g)
+{
+    int[] divs = GetPrimeDivisors(n);
+    foreach (int div in divs)
+    {
+        if (ModPow(g, n / div, p) == 1)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+int FindGenerator()
+{
+    for (int i = 2; i < p; i++)
+    {
+        if (IsGenerator(i))
+        {
+            return i;
+        }
+    }
+    return 0;
+}
 
 int[] GetPB(int n)
 {
@@ -106,6 +178,36 @@ equation[] GetEqs(int p, int alpha, int n, int[] B)
             }
         }
     }
+}
+
+equation[] GetEqsParallel(int p, int alpha, int n, int[] B)
+{
+    List<equation> res = new List<equation>();
+    object locker = new object();
+    bool stop = false;
+    Parallel.For(0, 3, i =>
+    {
+        equation eq;
+        while (!stop)
+        {
+            eq = GetEq(Random.Shared.Next(0, n), p, alpha, n, B);
+            if (eq != null)
+            {
+                lock (locker)
+                {
+                    if (res.Count < B.Length + 10)
+                    {
+                        res.Add(eq);
+                    }
+                    if (res.Count >= B.Length + 10)
+                    {
+                        stop = true;
+                    }
+                }
+            }
+        }
+    });
+    return res.ToArray();
 }
 
 int GetX(int p, int alpha, int beta, int n, int[] B, int[] logs)
@@ -311,7 +413,7 @@ int inv(long a, long b)
 {
     long t1, t2, t3, t4;
     (t1, t2, t3, t4) = Euclid(a, b, true);
-    return (int)Math.Abs(t4);
+    return Mod(t3, (int)b);
 }
 
 int gcd(long a, long b)
