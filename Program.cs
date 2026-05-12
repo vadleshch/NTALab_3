@@ -13,7 +13,7 @@ Random r = new Random();
 int p, x = 0;
 int[] B, logs;
 equation[] eqs;
-Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "n".PadRight(10) + "x".PadRight(12) + "час".PadRight(12));
+Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "x".PadRight(12) + "час".PadRight(12));
 for (int i = 100000; i <= 9900000; i += 900000)
 {
     p = (int)GetPrimeByIndex(i);
@@ -38,7 +38,7 @@ for (int i = 100000; i <= 9900000; i += 900000)
         }
         sw.Stop();
 
-        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + n.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds/5).ToString().PadRight(12));
+        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds / 5).ToString().PadRight(12));
     }
 }
 
@@ -52,6 +52,7 @@ for (int i = 100000; i <= 9900000; i += 900000)
 //int[] B = GetPB(n);
 //equation[] eqs;
 //int[] logs;
+//sw.Restart();
 //while (true)
 //{
 //    eqs = GetEqs(p, alpha, n, B);
@@ -62,9 +63,11 @@ for (int i = 100000; i <= 9900000; i += 900000)
 //    }
 //}
 //int x = GetX(p, alpha, beta, n, B, logs);
+//sw.Stop();
 //Console.WriteLine("x = " + x);
+//Console.WriteLine("час = " + sw.ElapsedMilliseconds + " ms");
 
-int[] GetPrimeDivisors(int n)       
+int[] GetPrimeDivisors(int n)
 {
     List<int> divs = new List<int>();
     for (int i = 2; i * i < n; i++)
