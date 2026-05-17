@@ -5,15 +5,16 @@ long GetPrimeByIndex(int i)
 {
     return Convert.ToInt64(File.ReadLines("primebase.txt").Skip(i).First());
 }
-int n;
-int alpha;
-int beta;
+long n;
+long alpha;
+long beta;
 Stopwatch sw = new Stopwatch();
-Random r = new Random();
-//int p, x = 0;
-//int[] B, logs;
+//Stopwatch sw2 = new Stopwatch();
+//Random r = new Random();
+//long p, x = 0;
+//long[] B, logs;
 //equation[] eqs;
-//Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "x".PadRight(12) + "час".PadRight(12));
+//Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "x".PadRight(12) + "час 1".PadRight(12) + "час 2".PadRight(12));
 //for (int i = 100000; i <= 9900000; i += 900000)
 //{
 //    p = (int)GetPrimeByIndex(i);
@@ -21,7 +22,7 @@ Random r = new Random();
 //    alpha = FindGenerator();
 //    for (int j = 1; j < 6; j++)
 //    {
-//        beta = ModPow(alpha, r.Next(100, n), p);
+//        beta = ModPow(alpha, r.Next(100, (int)n), p);
 //        sw.Restart();
 //        for (int k = 0; k < 5; k++)
 //        {
@@ -37,45 +38,60 @@ Random r = new Random();
 //            x = GetX(p, alpha, beta, n, B, logs);
 //        }
 //        sw.Stop();
-
-//        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds / 5).ToString().PadRight(12));
+//        sw2.Restart();
+//        for (int k = 0; k < 5; k++)
+//        {
+//            B = GetPB(n);
+//            while (true)
+//            {
+//                logs = Solve(GetEqsParallel(p, alpha, n, B), n, B.Length);
+//                if (logs != null)
+//                {
+//                    break;
+//                }
+//            }
+//            x = GetX(p, alpha, beta, n, B, logs);
+//        }
+//        sw2.Stop();
+//        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds / 5).ToString().PadRight(12) + (sw2.ElapsedMilliseconds / 5).ToString().PadRight(12));
 //    }
 //}
-int p;
+long p;
 Console.Write("p = ");
-p = Convert.ToInt32(Console.ReadLine());
+p = Convert.ToInt64(Console.ReadLine()); 2
 Console.Write("alpha = ");
-alpha = Convert.ToInt32(Console.ReadLine());
+alpha = Convert.ToInt64(Console.ReadLine());
 Console.Write("beta = ");
-beta = Convert.ToInt32(Console.ReadLine());
+beta = Convert.ToInt64(Console.ReadLine());
 n = p - 1;
 if (!IsGenerator(alpha))
 {
     Console.WriteLine("alpha не є генератором");
     return;
 }
-int[] B = GetPB(n);
+Console.WriteLine("alpha є генератором");
+long[] B = GetPB(n);
 equation[] eqs;
-int[] logs;
+long[] logs;
 sw.Restart();
 while (true)
 {
-    eqs = GetEqsParallel(p, alpha, n, B);
+    eqs = GetEqs(p, alpha, n, B);
     logs = Solve(eqs, n, B.Length);
     if (logs != null)
     {
         break;
     }
 }
-int x = GetX(p, alpha, beta, n, B, logs);
+long x = GetX(p, alpha, beta, n, B, logs);
 sw.Stop();
 Console.WriteLine("x = " + x);
 Console.WriteLine("час = " + sw.ElapsedMilliseconds + " ms");
 
-int[] GetPrimeDivisors(int n)
+long[] GetPrimeDivisors(long n)
 {
-    List<int> divs = new List<int>();
-    for (int i = 2; i * i < n; i++)
+    List<long> divs = new List<long>();
+    for (long i = 2; i <= n / i; i++)
     {
         if (n % i == 0)
         {
@@ -90,10 +106,10 @@ int[] GetPrimeDivisors(int n)
     return divs.ToArray();
 }
 
-bool IsGenerator(int g)
+bool IsGenerator(long g)
 {
-    int[] divs = GetPrimeDivisors(n);
-    foreach (int div in divs)
+    long[] divs = GetPrimeDivisors(n);
+    foreach (long div in divs)
     {
         if (ModPow(g, n / div, p) == 1)
         {
@@ -103,9 +119,9 @@ bool IsGenerator(int g)
     return true;
 }
 
-int FindGenerator()
+long FindGenerator()
 {
-    for (int i = 2; i < p; i++)
+    for (long i = 2; i < p; i++)
     {
         if (IsGenerator(i))
         {
@@ -115,15 +131,15 @@ int FindGenerator()
     return 0;
 }
 
-int[] GetPB(int n)
+long[] GetPB(long n)
 {
     double B = 3.38 * Math.Exp(0.5 * Math.Sqrt(Math.Log(n) * Math.Log(Math.Log(n))));
-    List<int> S = new List<int>();
-    int temp;
+    List<long> S = new List<long>();
+    long temp;
     int i = 0;
     while (true)
     {
-        temp = (int)GetPrimeByIndex(i);
+        temp = GetPrimeByIndex(i);
         if (temp > B)
         {
             break;
@@ -134,9 +150,9 @@ int[] GetPB(int n)
     return S.ToArray();
 }
 
-int[] GetV(int n, int[] B)
+long[] GetV(long n, long[] B)
 {
-    int[] V = new int[B.Length];
+    long[] V = new long[B.Length];
 ret:
     for (int i = 0; i < B.Length; i++)
     {
@@ -157,9 +173,9 @@ ret:
     }
 }
 
-equation GetEq(int k, int p, int alpha, int n, int[] B)
+equation GetEq(long k, long p, long alpha, long n, long[] B)
 {
-    int[] v = GetV(ModPow(alpha, k, p), B);
+    long[] v = GetV(ModPow(alpha, k, p), B);
     if (v == null)
     {
         return null;
@@ -167,13 +183,13 @@ equation GetEq(int k, int p, int alpha, int n, int[] B)
     return new equation(v, k % n);
 }
 
-equation[] GetEqs(int p, int alpha, int n, int[] B)
+equation[] GetEqs(long p, long alpha, long n, long[] B)
 {
     List<equation> eqs = new List<equation>();
     equation eq;
     while (true)
     {
-        eq = GetEq(r.Next(0, n), p, alpha, n, B);
+        eq = GetEq(r.NextInt64(0, n), p, alpha, n, B);
         if (eq != null)
         {
             if (!eqs.Contains(eq))
@@ -188,7 +204,7 @@ equation[] GetEqs(int p, int alpha, int n, int[] B)
     }
 }
 
-equation[] GetEqsParallel(int p, int alpha, int n, int[] B)
+equation[] GetEqsParallel(long p, long alpha, long n, long[] B)
 {
     List<equation> res = new List<equation>();
     object locker = new object();
@@ -198,7 +214,7 @@ equation[] GetEqsParallel(int p, int alpha, int n, int[] B)
         equation eq;
         while (!stop)
         {
-            eq = GetEq(Random.Shared.Next(0, n), p, alpha, n, B);
+            eq = GetEq(Random.Shared.NextInt64(0, n), p, alpha, n, B);
             if (eq != null)
             {
                 lock (locker)
@@ -218,15 +234,15 @@ equation[] GetEqsParallel(int p, int alpha, int n, int[] B)
     return res.ToArray();
 }
 
-int GetX(int p, int alpha, int beta, int n, int[] B, int[] logs)
+long GetX(long p, long alpha, long beta, long n, long[] B,long[] logs)
 {
-    int value;
-    int[] d;
+    long value;
+    long[] d;
     long sum;
-    int l, x;
+    long l, x;
     while (true)
     {
-        l = r.Next(0, n);
+        l = r.NextInt64(0, n);
         value = MulMod(beta, ModPow(alpha, l, p), p);
         d = GetV(value, B);
         if (d != null)
@@ -239,15 +255,15 @@ int GetX(int p, int alpha, int beta, int n, int[] B, int[] logs)
             x = Mod(sum - l, n);
             if (ModPow(alpha, x, p) == beta)
             {
-                return x;
+                return x % n;
             }
         }
     }
 }
 
-int[] Solve(equation[] eqs, int n, int m) //функцію згенеровано ШІ
+long[] Solve(equation[] eqs, long n, int m)//фунцію згенеровано ШІ
 {
-    int[,] a = new int[eqs.Length, m + 1];
+    long[,] a = new long[eqs.Length, m + 1];
     int[] pos = new int[m];
 
     for (int i = 0; i < m; i++)
@@ -287,7 +303,7 @@ int[] Solve(equation[] eqs, int n, int m) //функцію згенерован�
 
         SwapRows(a, row, sel, m + 1);
 
-        int obr = inv(a[row, col], n);
+        long obr = inv(a[row, col], n);
         obr = Mod(obr, n);
 
         for (int j = col; j <= m; j++)
@@ -299,11 +315,11 @@ int[] Solve(equation[] eqs, int n, int m) //функцію згенерован�
         {
             if (i != row && a[i, col] != 0)
             {
-                int c = a[i, col];
+                long c = a[i, col];
 
                 for (int j = col; j <= m; j++)
                 {
-                    a[i, j] = Mod((long)a[i, j] - (long)c * a[row, j], n);
+                    a[i, j] = Mod(a[i, j] - MulMod(c, a[row, j], n), n);
                 }
             }
         }
@@ -344,7 +360,7 @@ int[] Solve(equation[] eqs, int n, int m) //функцію згенерован�
         }
     }
 
-    int[] x = new int[m];
+    long[] x = new long[m];
 
     for (int i = 0; i < m; i++)
     {
@@ -354,9 +370,9 @@ int[] Solve(equation[] eqs, int n, int m) //функцію згенерован�
     return x;
 }
 
-void SwapRows(int[,] a, int x, int y, int m) //функцію згенеровано ШІ
+void SwapRows(long[,] a, int x, int y, int m) //фунцію згенеровано ШІ
 {
-    int temp;
+    long temp;
 
     for (int i = 0; i < m; i++)
     {
@@ -364,27 +380,26 @@ void SwapRows(int[,] a, int x, int y, int m) //функцію згенерова
         a[x, i] = a[y, i];
         a[y, i] = temp;
     }
-
 }
-
-int ModPow(int a, int r, int m)
+long ModPow(long a, long r, long m)
 {
-    int res = 1;
-    a %= m;
-    for (int i = 31; i >= 0; i--)
+    long res = 1;
+    a = a % m;
+    while (r > 0)
     {
-        res = MulMod(res, res, m);
-        if ((r & (1 << i)) != 0)
+        if ((r & 1L) != 0)
         {
             res = MulMod(res, a, m);
         }
+        a = MulMod(a, a, m);
+        r >>= 1;
     }
     return res;
 }
 
-int MulMod(int a, int b, int m)
+long MulMod(long a, long b, long m)
 {
-    int res = 0;
+    long res = 0;
     a %= m;
     while (b > 0)
     {
@@ -398,7 +413,7 @@ int MulMod(int a, int b, int m)
     return res;
 }
 
-int AddMod(int a, int b, int m)
+long AddMod(long a, long b, long m)
 {
     if (a >= m - b)
     {
@@ -407,28 +422,28 @@ int AddMod(int a, int b, int m)
     return a + b;
 }
 
-int Mod(long a, int n)
+long Mod(long a, long n)
 {
     a = a % n;
     if (a < 0)
     {
         a = a + n;
     }
-    return (int)a;
+    return a;
 }
 
-int inv(long a, long b)
+long inv(long a, long b)
 {
     long t1, t2, t3, t4;
     (t1, t2, t3, t4) = Euclid(a, b, true);
-    return Mod(t3, (int)b);
+    return Mod(t3, b);
 }
 
-int gcd(long a, long b)
+long gcd(long a, long b)
 {
     long t1, t2, t3, t4;
     (t1, t2, t3, t4) = Euclid(a, b);
-    return (int)Math.Abs(t1);
+    return Math.Abs(t1);
 }
 
 (long, long, long, long) Euclid(long A, long B, bool uv = false)

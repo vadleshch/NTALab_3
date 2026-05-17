@@ -6,9 +6,9 @@ namespace NTALab_3
 {
     internal class equation
     {
-        public int[] C;
-        public int l;
-        public equation(int[] coefs, int lyshok)
+        public long[] C;
+        public long l;
+        public equation(long[] coefs, long lyshok)
         {
             C = coefs;
             l = lyshok;
