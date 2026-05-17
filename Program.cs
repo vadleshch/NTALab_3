@@ -10,62 +10,67 @@ int alpha;
 int beta;
 Stopwatch sw = new Stopwatch();
 Random r = new Random();
-int p, x = 0;
-int[] B, logs;
-equation[] eqs;
-Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "x".PadRight(12) + "час".PadRight(12));
-for (int i = 100000; i <= 9900000; i += 900000)
-{
-    p = (int)GetPrimeByIndex(i);
-    n = p - 1;
-    alpha = FindGenerator();
-    for (int j = 1; j < 6; j++)
-    {
-        beta = ModPow(alpha, r.Next(100, n), p);
-        sw.Restart();
-        for (int k = 0; k < 5; k++)
-        {
-            B = GetPB(n);
-            while (true)
-            {
-                logs = Solve(GetEqs(p, alpha, n, B), n, B.Length);
-                if (logs != null)
-                {
-                    break;
-                }
-            }
-            x = GetX(p, alpha, beta, n, B, logs);
-        }
-        sw.Stop();
-
-        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds / 5).ToString().PadRight(12));
-    }
-}
-
-//Console.Write("p = ");
-//int p = Convert.ToInt32(Console.ReadLine());
-//Console.Write("alpha = ");
-//alpha = Convert.ToInt32(Console.ReadLine());
-//Console.Write("beta = ");
-//beta = Convert.ToInt32(Console.ReadLine());
-//n = p - 1;
-//int[] B = GetPB(n);
+//int p, x = 0;
+//int[] B, logs;
 //equation[] eqs;
-//int[] logs;
-//sw.Restart();
-//while (true)
+//Console.WriteLine("p".PadRight(10) + "alpha".PadRight(10) + "beta".PadRight(10) + "x".PadRight(12) + "час".PadRight(12));
+//for (int i = 100000; i <= 9900000; i += 900000)
 //{
-//    eqs = GetEqs(p, alpha, n, B);
-//    logs = Solve(eqs, n, B.Length);
-//    if (logs != null)
+//    p = (int)GetPrimeByIndex(i);
+//    n = p - 1;
+//    alpha = FindGenerator();
+//    for (int j = 1; j < 6; j++)
 //    {
-//        break;
+//        beta = ModPow(alpha, r.Next(100, n), p);
+//        sw.Restart();
+//        for (int k = 0; k < 5; k++)
+//        {
+//            B = GetPB(n);
+//            while (true)
+//            {
+//                logs = Solve(GetEqs(p, alpha, n, B), n, B.Length);
+//                if (logs != null)
+//                {
+//                    break;
+//                }
+//            }
+//            x = GetX(p, alpha, beta, n, B, logs);
+//        }
+//        sw.Stop();
+
+//        Console.WriteLine(p.ToString().PadRight(10) + alpha.ToString().PadRight(10) + beta.ToString().PadRight(10) + x.ToString().PadRight(12) + (sw.ElapsedMilliseconds / 5).ToString().PadRight(12));
 //    }
 //}
-//int x = GetX(p, alpha, beta, n, B, logs);
-//sw.Stop();
-//Console.WriteLine("x = " + x);
-//Console.WriteLine("час = " + sw.ElapsedMilliseconds + " ms");
+int p;
+Console.Write("p = ");
+p = Convert.ToInt32(Console.ReadLine());
+Console.Write("alpha = ");
+alpha = Convert.ToInt32(Console.ReadLine());
+Console.Write("beta = ");
+beta = Convert.ToInt32(Console.ReadLine());
+n = p - 1;
+if (!IsGenerator(alpha))
+{
+    Console.WriteLine("alpha не є генератором");
+    return;
+}
+int[] B = GetPB(n);
+equation[] eqs;
+int[] logs;
+sw.Restart();
+while (true)
+{
+    eqs = GetEqsParallel(p, alpha, n, B);
+    logs = Solve(eqs, n, B.Length);
+    if (logs != null)
+    {
+        break;
+    }
+}
+int x = GetX(p, alpha, beta, n, B, logs);
+sw.Stop();
+Console.WriteLine("x = " + x);
+Console.WriteLine("час = " + sw.ElapsedMilliseconds + " ms");
 
 int[] GetPrimeDivisors(int n)
 {
@@ -188,7 +193,7 @@ equation[] GetEqsParallel(int p, int alpha, int n, int[] B)
     List<equation> res = new List<equation>();
     object locker = new object();
     bool stop = false;
-    Parallel.For(0, 3, i =>
+    Parallel.For(0, 10, i =>
     {
         equation eq;
         while (!stop)
